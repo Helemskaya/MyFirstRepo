@@ -4,7 +4,7 @@ class Ship(Sprite):
     def __init__(self, ai):
         super().__init__()
         self.screen = ai.screen
-        self.image = pygame.image.load('images/ship1.bmp')
+        self.image = pygame.image.load('images/ship.bmp')
         self.rect = self.image.get_rect()
         self.screen_rect = ai.screen.get_rect()
         self.rect.midbottom = self.screen_rect.midbottom
