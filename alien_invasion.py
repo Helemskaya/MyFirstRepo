@@ -25,6 +25,10 @@ class AlienInvasion():
         self.aliens = pygame.sprite.Group()
         self._create_fleet()
         self.play_button = Button(self, 'Play')
+        with open('record.txt') as file_object:
+            high_score = file_object.read()
+        self.stats.high_score = int(high_score)
+        self.sb.prep_high_score()
 
     def run_game(self):
         while True:
@@ -94,6 +98,10 @@ class AlienInvasion():
     def _check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                high_score = str(self.stats.high_score)
+                filename = 'record.txt'
+                with open(filename, 'w') as file_object:
+                    file_object.write(high_score)
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
