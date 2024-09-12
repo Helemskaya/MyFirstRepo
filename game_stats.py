@@ -8,6 +8,12 @@ class GameStats():
         self.game_active = False
         # Рекорд не должен сбрасываться
         self.high_score = 0
+        try:
+            with open('record.txt') as file_object:
+                high_score = file_object.read()
+            self.high_score = int(high_score)
+        except FileNotFoundError:
+            pass
     def reset_stats(self):
         self.ships_left = self.settings.ship_limit
         self.score = 0
