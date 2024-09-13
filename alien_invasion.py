@@ -126,9 +126,7 @@ class AlienInvasion():
         # Сброс игровой статистики
         self.settings.initialize_dynamic_settings()
         self.stats.reset_stats()
-        self.sb.prep_score()
-        self.sb.prep_level()
-        self.sb.prep_ships()
+        self.sb.prep_images()
         self.stats.game_active = True
         self.aliens.empty()
         self.bullets.empty()
@@ -164,11 +162,14 @@ class AlienInvasion():
             self.sb.prep_score()
             self.sb.check_high_score()
         if not self.aliens:
-            self.bullets.empty()
-            self.settings.increase_speed()
-            self._create_fleet()
-            self.stats.level += 1
-            self.sb.prep_level()
+            self.start_new_level()
+    def start_new_level(self):
+        self.bullets.empty()
+        self.settings.increase_speed()
+        self._create_fleet()
+        self.stats.level += 1
+        self.sb.prep_level()
+
     def _update_screen(self):
         self.screen.fill(self.settings.color_bg)
         self.ship.blitme()
