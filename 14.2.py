@@ -2,7 +2,6 @@ import pygame
 import sys
 import pygame.font
 from pygame.sprite import Sprite
-from time import sleep
 class Ship():
     def __init__(self, screen):
         self.screen = screen
@@ -47,7 +46,6 @@ class Kube(Sprite):
             return True
     def draw_kube(self):
         pygame.draw.rect(self.screen, self.color, self.rect)
-
 class Button():
     def __init__(self,ai_game, msg):
         self.screen = ai_game.screen
@@ -73,6 +71,26 @@ class Stats():
         self.game_active = False
     def reset_stats(self):
         self.left_try = 3
+        self.score = 0
+
+class Scoreboard():
+    def __init__(self, ai_game):
+        self.ai_game = ai_game
+        self.screen = self.ai_game.screen
+        self.screen_rect = self.screen.get_rect()
+        self.stats = ai_game.stats
+        self.font = pygame.font.SysFont(None, 48)
+        self.text_color = (30, 30, 30)
+        self.prep_score()
+    def prep_score(self):
+        score_str = str(self.stats.score)
+        self.score_image = self.font.render(score_str, True,
+                                            self.text_color, self.ai_game.bg_color)
+        self.score_rect = self.score_image.get_rect()
+        self.score_rect.midtop = self.screen_rect.midtop
+
+    def show_score(self):
+        self.screen.blit(self.score_image, self.score_rect)
 class MyGame():
     def __init__(self):
         pygame.init()
@@ -82,8 +100,10 @@ class MyGame():
         self.ship = Ship(self.screen)
         self.kubes = pygame.sprite.Group()
         kube = Kube(self)
+        self.current_speed = kube.speed
         self.kubes.add(kube)
         self.bullets = pygame.sprite.Group()
+        self.sb = Scoreboard(self)
         self.play_button = Button(self, 'Play')
     def run_game(self):
         while True:
@@ -115,12 +135,14 @@ class MyGame():
                 if button_clicked and not self.stats.game_active:
                     self._start_game()
     def _start_game(self):
-        for kube in self.kubes.sprites():
-            kube.speed = 1.2
         self.stats.reset_stats()
+        self.sb.prep_score()
+        for kube in self.kubes:
+            kube.speed = 1
         self.stats.game_active = True
         self.bullets.empty()
         self.ship.image_rect.midleft = self.ship.screen_rect.midleft
+
     def fire_bullet(self):
         new_bullet = Bullet(self)
         self.bullets.add(new_bullet)
@@ -130,13 +152,19 @@ class MyGame():
             if bullet.rect.right >= self.ship.screen_rect.right:
                 self.left_one_try()
         collisions = pygame.sprite.groupcollide(
-            self.bullets, self.kubes, True, False)
+            self.bullets, self.kubes, True, True)
         if collisions:
+            self.stats.score += 100
+            self.sb.prep_score()
+        if not self.kubes:
             self.bullets.empty()
-            for kube in self.kubes.sprites():
-                sleep(0.5)
-                kube.speed *= 1.5
-                kube.rect.midright = kube.screen_rect.midright
+            kube = Kube(self)
+            self.kubes.add(kube)
+            self.increase_speed()
+    def increase_speed(self):
+        self.current_speed *= 2
+        for kube in self.kubes.sprites():
+            kube.speed = self.current_speed
     def left_one_try(self):
         if self.stats.left_try > 0:
             self.stats.left_try -= 1
@@ -159,6 +187,7 @@ class MyGame():
     def screen_update(self):
         self.screen.fill(self.bg_color)
         self.ship.blit_me()
+        self.sb.show_score()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         for kube in self.kubes.sprites():
